@@ -38,7 +38,7 @@ steps:
 
 # Step 6: Push changes to the new branch on GitHub
 - script: |
-    git remote add github https://$(GITHUB_TOKEN)github.com/drubio87/esp-azure.git
+    git remote add github https://$(GITHUB_TOKEN)@github.com/drubio87/esp-azure.git
     git push github feature/azure-pipeline-$(Build.BuildId)
   displayName: "Push to GitHub"
   env:
