@@ -10,6 +10,46 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+# Step 1: Checkout the repository (Azure DevOps repo)
+- checkout: self
+
+# Step 2: Make your changes (e.g., update a file)
 - script: |
-    make
-  displayName: 'make'
+    echo "Making some changes"
+    echo "This is a change" >> myfile.txt
+  displayName: "Make changes"
+
+# Step 3: Configure Git for pushing
+- script: |
+    git config --global user.email "drubio@jcm-tech.com"
+    git config --global user.name "drubio87"
+  displayName: "Configure Git"
+
+# Step 4: Create a new branch (use a unique branch name)
+- script: |
+    git checkout -b feature/azure-pipeline-$(Build.BuildId)
+  displayName: "Create new branch"
+
+# Step 5: Add changes and commit them
+- script: |
+    git add .
+    git commit -m "Automated commit from Azure DevOps pipeline"
+  displayName: "Git Commit"
+
+# Step 6: Push changes to the new branch on GitHub
+- script: |
+    git remote add github https://$(GITHUB_TOKEN)github.com/drubio87/esp-azure.git
+    git push github feature/azure-pipeline-$(Build.BuildId)
+  displayName: "Push to GitHub"
+  env:
+    GITHUB_TOKEN: $(GITHUB_TOKEN)  # Pass the GitHub PAT securely
+
+# Step 7: Create a pull request using GitHub REST API
+- script: |
+    curl -X POST -H "Authorization: token $(GITHUB_TOKEN)" \
+    -H "Accept: application/vnd.github.v3+json" \
+    https://api.github.com/repos/username/repo/pulls \
+    -d '{"title":"Automated PR from Azure Pipeline", "head":"feature/azure-pipeline-$(Build.BuildId)", "base":"main", "body":"This PR is created automatically by the Azure DevOps pipeline."}'
+  displayName: "Create Pull Request"
+  env:
+    GITHUB_TOKEN: $(GITHUB_TOKEN)  # Pass the GitHub PAT securely
